@@ -488,6 +488,28 @@
   
   maxheight -= (icnrect.size.height * 2);  
   
+
+  //if (position == DockPositionBottom) {
+    while (rect.size.height > maxheight) {
+      iconSize -= ICN_INCR;
+      icnrect.size.height = ceil(iconSize / 3 * 4);
+      icnrect.size.width = icnrect.size.height;
+      rect.size.height = [icons count] * icnrect.size.height;
+  
+      if (targetIndex != -1) {
+        rect.size.height += icnrect.size.height;
+      }
+        
+      if (iconSize <= MIN_ICN_SIZE) {
+        break;
+      }
+    }
+
+    // Bottom (not adjusted yet)
+    rect.size.height = icnrect.size.width;
+    rect.origin.y =  scrrect.size.height - rect.size.height;
+    rect.origin.x = ceil((scrrect.size.width - rect.size.width) / 2);
+  /*} else {
   while (rect.size.height > maxheight) {
     iconSize -= ICN_INCR;
     icnrect.size.height = ceil(iconSize / 3 * 4);
@@ -502,11 +524,12 @@
       break;
     }
   }
+    // Sides
+    rect.size.width = icnrect.size.width;
+    rect.origin.x = (position == DockPositionLeft) ? 0 : scrrect.size.width - rect.size.width;
+    rect.origin.y = ceil((scrrect.size.height - rect.size.height) / 2);
+  }*/
 
-  rect.size.width = icnrect.size.width;
-  rect.origin.x = (position == DockPositionLeft) ? 0 : scrrect.size.width - rect.size.width;
-  rect.origin.y = ceil((scrrect.size.height - rect.size.height) / 2);
-  
   if (view) {
     [view setNeedsDisplayInRect: [self frame]];
   }

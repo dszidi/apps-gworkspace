@@ -54,10 +54,6 @@
 #import "Finder.h"
 #import "Inspector.h"
 #import "Operation.h"
-#import "TShelf/TShelfWin.h"
-#import "TShelf/TShelfView.h"
-#import "TShelf/TShelfViewItem.h"
-#import "TShelf/TShelfIconsView.h"
 #import "History/History.h"
 
 
@@ -142,8 +138,6 @@ static GWorkspace *gworkspace = nil;
   RELEASE (openWithController);
   RELEASE (runExtController);
   RELEASE (startAppWin);
-  RELEASE (tshelfWin);
-  RELEASE (tshelfPBDir);
   RELEASE (vwrsManager);
   RELEASE (dtopManager);
   DESTROY (inspector);
@@ -277,14 +271,6 @@ static GWorkspace *gworkspace = nil;
   menuItem = [menu addItemWithTitle:_(@"Fiend") action:NULL keyEquivalent:@""];
   subMenu = AUTORELEASE ([NSMenu new]);
   [menu setSubmenu: subMenu forItem: menuItem];
-
-  menuItem = [menu addItemWithTitle:_(@"Tabbed Shelf") action:NULL keyEquivalent:@""];
-  subMenu = AUTORELEASE ([NSMenu new]);
-  [menu setSubmenu: subMenu forItem: menuItem];    
-  [subMenu addItemWithTitle:_(@"Show Tabbed Shelf") action:@selector(showTShelf:) keyEquivalent:@"s"];
-  [subMenu addItemWithTitle:_(@"Remove Current Tab") action:@selector(removeTShelfTab:) keyEquivalent:@""];
-  [subMenu addItemWithTitle:_(@"Rename Current Tab") action:@selector(renameTShelfTab:) keyEquivalent:@""];
-  [subMenu addItemWithTitle:_(@"Add Tab...") action:@selector(addTShelfTab:) keyEquivalent:@""];
 
   [menu addItemWithTitle:_(@"Terminal") action:@selector(showTerminal:) keyEquivalent:@"t"];
   [menu addItemWithTitle:_(@"Run...") action:@selector(runCommand:) keyEquivalent:@""];  
@@ -467,13 +453,6 @@ static GWorkspace *gworkspace = nil;
     [self connectRecycler];
   }  
 
-  tshelfPBFileNum = 0;
-  [self createTabbedShelf];
-  if ([defaults boolForKey: @"tshelf"])
-    [self showTShelf: nil];
-  else
-    [self hideTShelf: nil];
-
   prefController = [PrefController new];  
   
   history = [[History alloc] init];
@@ -633,7 +612,6 @@ static GWorkspace *gworkspace = nil;
   TEST_CLOSE (prefController, [prefController myWin]);
   TEST_CLOSE (fiend, [fiend myWin]);
   TEST_CLOSE (history, [history myWin]); 
-  TEST_CLOSE (tshelfWin, tshelfWin);
   TEST_CLOSE (startAppWin, [startAppWin win]);
 
   if (fswatcher)
@@ -790,41 +768,6 @@ static GWorkspace *gworkspace = nil;
 	             withKey: nil];
 }
 
-- (NSImage *)tshelfBackground
-{
-  if ([dtopManager isActive]) {
-    return [dtopManager tabbedShelfBackground];
-  }
-  return nil;
-}
-
-- (void)tshelfBackgroundDidChange
-{
-  if ([tshelfWin isVisible]) {
-    [[tshelfWin shelfView] setNeedsDisplay: YES];
-  }  
-}
-
-- (NSString *)tshelfPBDir
-{
-  return tshelfPBDir;
-}
-
-- (NSString *)tshelfPBFilePath
-{
-  NSString *tshelfPBFileNName;
-
-  tshelfPBFileNum++;
-  if (tshelfPBFileNum >= TSHF_MAXF)
-    {
-      tshelfPBFileNum = 0;
-    }
-  
-  tshelfPBFileNName = [NSString stringWithFormat: @"%i", tshelfPBFileNum];
-  
-  return [tshelfPBDir stringByAppendingPathComponent: tshelfPBFileNName];
-}
-
 - (void)changeDefaultEditor:(NSNotification *)notif
 {
   NSString *editor = [notif object];
@@ -860,19 +803,6 @@ static GWorkspace *gworkspace = nil;
 {
   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
   id entry;
-
-  [tshelfWin saveDefaults];  
-   
-  if ([tshelfWin isVisible])
-    {
-    [defaults setBool: YES forKey: @"tshelf"];
-    }
-  else
-    {
-      [defaults setBool: NO forKey: @"tshelf"];
-    }
-  [defaults setObject: [NSString stringWithFormat: @"%i", tshelfPBFileNum]
-               forKey: @"tshelfpbfnum"];
 
   if ([[prefController myWin] isVisible])
     {
@@ -930,10 +860,6 @@ static GWorkspace *gworkspace = nil;
 {
   NSHelpManager *manager = [NSHelpManager sharedHelpManager];
   NSString *help;
-
-  help = @"TabbedShelf.rtfd";
-  [manager setContextHelp: (NSAttributedString *)help 
-                forObject: [tshelfWin shelfView]];
 
   help = @"History.rtfd";
   [manager setContextHelp: (NSAttributedString *)help 
@@ -1029,54 +955,6 @@ static GWorkspace *gworkspace = nil;
   [fsnodeRep setDefaultSortOrder: type];
 }
 
-- (void)createTabbedShelf
-{
-  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-  id entry;
-  NSString *basePath;
-  BOOL isdir;
-
-  entry = [defaults objectForKey: @"tshelfpbfnum"];
-  if (entry) {
-    tshelfPBFileNum = [entry intValue];
-  } else {
-    tshelfPBFileNum = 0;
-  }      
-       
-  basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) lastObject];
-  basePath = [basePath stringByAppendingPathComponent: @"GWorkspace"];
-
-  if (([fm fileExistsAtPath: basePath isDirectory: &isdir] && isdir) == NO) {
-    if ([fm createDirectoryAtPath: basePath attributes: nil] == NO) {
-      NSLog(@"Can't create the GWorkspace directory! Quitting now.");
-      [NSApp terminate: self];
-    }
-  }
-
-	tshelfPBDir = [basePath stringByAppendingPathComponent: @"PBData"];
-
-	if ([fm fileExistsAtPath: tshelfPBDir isDirectory: &isdir] == NO) {
-    if ([fm createDirectoryAtPath: tshelfPBDir attributes: nil] == NO) {
-      NSLog(@"Can't create the TShelf directory! Quitting now.");
-      [NSApp terminate: self];
-    }
-	} else {
-		if (isdir == NO) {
-			NSLog (@"Warning - %@ is not a directory - quitting now!", tshelfPBDir);			
-			[NSApp terminate: self];
-		}
-  }
-  
-  RETAIN (tshelfPBDir);
-
-  tshelfWin = [[TShelfWin alloc] init];
-}
-
-- (TShelfWin *)tabbedShelf
-{
-  return tshelfWin;
-}
-
 - (StartAppWin *)startAppWin
 {
   return startAppWin;
@@ -1091,11 +969,6 @@ static GWorkspace *gworkspace = nil;
   
   } else if (sel_isEqual(action, @selector(emptyRecycler:))) {
     return ([trashContents count] != 0);
-  } else if (sel_isEqual(action, @selector(removeTShelfTab:))
-              || sel_isEqual(action, @selector(renameTShelfTab:))
-                      || sel_isEqual(action, @selector(addTShelfTab:))) {
-    return [tshelfWin isVisible];
-
   } else if (sel_isEqual(action, @selector(activateContextHelp:))) {
     return ([NSHelpManager isContextHelpModeActive] == NO);
 
@@ -1107,25 +980,6 @@ static GWorkspace *gworkspace = nil;
                   || sel_isEqual(action, @selector(paste:))) {
     NSWindow *kwin = [NSApp keyWindow];
 
-    if (kwin && [kwin isKindOfClass: [TShelfWin class]]) {
-      TShelfViewItem *item = [[tshelfWin shelfView] selectedTabItem];
-
-      if (item) {
-        TShelfIconsView *iview = (TShelfIconsView *)[item view];
-
-        if ([iview iconsType] == DATA_TAB) {
-          if (sel_isEqual(action, @selector(paste:))) {
-            return YES;
-          } else {
-            return [iview hasSelectedIcon];
-          }
-        } else {
-          return NO;
-        }
-      } else {
-        return NO;
-      }               
-    }
   }
   
   return YES;
@@ -1574,10 +1428,7 @@ static GWorkspace *gworkspace = nil;
   
   [vwrsManager thumbnailsDidChangeInPaths: nil];
   [dtopManager thumbnailsDidChangeInPaths: nil];
-  
-  if ([tshelfWin isVisible]) {
-    [tshelfWin updateIcons]; 
-	}
+
 }
 
 - (void)thumbnailsDidChange:(NSNotification *)notif
@@ -1611,9 +1462,6 @@ static GWorkspace *gworkspace = nil;
       [vwrsManager thumbnailsDidChangeInPaths: tmbdirs];
       [dtopManager thumbnailsDidChangeInPaths: tmbdirs];
 
-      if ([tshelfWin isVisible])
-        [tshelfWin updateIcons]; 
-
       [tmbdirs removeAllObjects];
     }
 
@@ -1640,10 +1488,6 @@ static GWorkspace *gworkspace = nil;
       
       [vwrsManager thumbnailsDidChangeInPaths: tmbdirs];
       [dtopManager thumbnailsDidChangeInPaths: tmbdirs];
-      
-      if ([tshelfWin isVisible]) {
-        [tshelfWin updateIcons]; 
-		  }
     }
 }
 
@@ -1670,8 +1514,6 @@ static GWorkspace *gworkspace = nil;
   [fsnodeRep setHideSysFiles: hide];
   [vwrsManager hideDotsFileDidChange: hide];
   [dtopManager hideDotsFileDidChange: hide];
-
-  [tshelfWin checkIconsAfterDotsFilesChange];
   
   if (fiend != nil) {
     [fiend checkIconsAfterDotsFilesChange];
@@ -1682,7 +1524,6 @@ static GWorkspace *gworkspace = nil;
 {
   [vwrsManager hiddenFilesDidChange: paths];
   [dtopManager hiddenFilesDidChange: paths];
-  [tshelfWin checkIconsAfterHidingOfPaths: paths]; 
 
   if (fiend != nil) {
     [fiend checkIconsAfterHidingOfPaths: paths];
@@ -1706,10 +1547,6 @@ static GWorkspace *gworkspace = nil;
   
   [vwrsManager thumbnailsDidChangeInPaths: paths];
   [dtopManager thumbnailsDidChangeInPaths: paths];
-
-  if ([tshelfWin isVisible]) {
-    [tshelfWin updateIcons]; 
-	}
 }
 
 - (void)applicationForExtensionsDidChange:(NSNotification *)notif
@@ -2404,54 +2241,7 @@ static GWorkspace *gworkspace = nil;
   [fiend renameCurrentLayer];
 }
 
-- (void)showTShelf:(id)sender
-{
-  NSMenu *menu = [[[NSApp mainMenu] itemWithTitle: NSLocalizedString(@"Tools", @"")] submenu];
-  menu = [[menu itemWithTitle: NSLocalizedString(@"Tabbed Shelf", @"")] submenu];
 
-  [[menu itemAtIndex: 0] setTitle: NSLocalizedString(@"Hide Tabbed Shelf", @"")];
-  [[menu itemAtIndex: 0] setAction: @selector(hideTShelf:)];
-
-  [tshelfWin activate];
-}
-
-- (void)hideTShelf:(id)sender
-{
-  NSMenu *menu = [[[NSApp mainMenu] itemWithTitle: NSLocalizedString(@"Tools", @"")] submenu];
-  menu = [[menu itemWithTitle: NSLocalizedString(@"Tabbed Shelf", @"")] submenu];
-
-  [[menu itemAtIndex: 0] setTitle: NSLocalizedString(@"Show Tabbed Shelf", @"")];
-  [[menu itemAtIndex: 0] setAction: @selector(showTShelf:)];
-
-  if ([tshelfWin isVisible])
-    {
-      [tshelfWin deactivate];
-    }
-}
-
-- (void)selectSpecialTShelfTab:(id)sender
-{
-  if ([tshelfWin isVisible] == NO)
-    {
-      [tshelfWin activate];
-    }
-  [[tshelfWin shelfView] selectLastItem];
-}
-
-- (void)addTShelfTab:(id)sender
-{
-  [tshelfWin addTab]; 
-}
-
-- (void)removeTShelfTab:(id)sender
-{
-  [tshelfWin removeTab]; 
-}
-
-- (void)renameTShelfTab:(id)sender
-{
-  [tshelfWin renameTab]; 
-}
 
 - (void)cut:(id)sender
 {
@@ -2459,17 +2249,7 @@ static GWorkspace *gworkspace = nil;
 
   if (kwin)
     {
-      if ([kwin isKindOfClass: [TShelfWin class]])
-	{
-	  TShelfViewItem *item = [[tshelfWin shelfView] selectedTabItem];
-
-	  if (item)
-	    {
-	      TShelfIconsView *iview = (TShelfIconsView *)[item view];
-	      [iview doCut];
-	    }
-	}
-      else if ([vwrsManager hasViewerWithWindow: kwin]
+      if ([vwrsManager hasViewerWithWindow: kwin]
                                   || [dtopManager hasWindow: kwin])
 	{
 	  id nodeView;
@@ -2509,15 +2289,7 @@ static GWorkspace *gworkspace = nil;
   NSWindow *kwin = [NSApp keyWindow];
 
   if (kwin) {
-    if ([kwin isKindOfClass: [TShelfWin class]]) {
-      TShelfViewItem *item = [[tshelfWin shelfView] selectedTabItem];
-
-      if (item) {
-        TShelfIconsView *iview = (TShelfIconsView *)[item view];
-        [iview doCopy];    
-      }
-      
-    } else if ([vwrsManager hasViewerWithWindow: kwin]
+    if ([vwrsManager hasViewerWithWindow: kwin]
                                   || [dtopManager hasWindow: kwin]) {
       id nodeView;
       NSArray *selection;
@@ -2550,16 +2322,8 @@ static GWorkspace *gworkspace = nil;
 {
   NSWindow *kwin = [NSApp keyWindow];
 
-  if (kwin) {
-    if ([kwin isKindOfClass: [TShelfWin class]]) {
-      TShelfViewItem *item = [[tshelfWin shelfView] selectedTabItem];
-
-      if (item) {
-        TShelfIconsView *iview = (TShelfIconsView *)[item view];
-        [iview doPaste];    
-      }
-      
-    } else if ([vwrsManager hasViewerWithWindow: kwin]
+  if (kwin) {      
+    if ([vwrsManager hasViewerWithWindow: kwin]
                                   || [dtopManager hasWindow: kwin]) {
       NSPasteboard *pb = [NSPasteboard generalPasteboard];
 

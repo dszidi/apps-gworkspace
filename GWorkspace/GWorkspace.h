@@ -48,7 +48,6 @@
 @class PrefController;
 @class Fiend;
 @class History;
-@class TShelfWin;
 @class OpenWithController;
 @class RunExternalController;
 @class StartAppWin;
@@ -144,10 +143,6 @@
   
   BOOL dontWarnOnQuit;
   BOOL terminating;
-  
-  TShelfWin *tshelfWin;
-  NSString *tshelfPBDir;
-  int tshelfPBFileNum;
       
   OpenWithController *openWithController;
   RunExternalController *runExtController;
@@ -200,14 +195,6 @@
 
 - (History *)historyWindow;
 
-- (NSImage *)tshelfBackground;	
-
-- (void)tshelfBackgroundDidChange;
-
-- (NSString *)tshelfPBDir;
-
-- (NSString *)tshelfPBFilePath;
-
 - (id)rootViewer;
 
 - (void)showRootViewer;
@@ -236,10 +223,6 @@
 - (int)defaultSortType;
 
 - (void)setDefaultSortType:(int)type;
-
-- (void)createTabbedShelf;
-
-- (TShelfWin *)tabbedShelf;
 
 - (StartAppWin *)startAppWin;
 
@@ -387,18 +370,6 @@
 - (void)removeFiendLayer:(id)sender;
 
 - (void)renameFiendLayer:(id)sender;
-
-- (void)showTShelf:(id)sender;
-
-- (void)hideTShelf:(id)sender;
-
-- (void)selectSpecialTShelfTab:(id)sender;
-
-- (void)addTShelfTab:(id)sender;
-
-- (void)removeTShelfTab:(id)sender;
-
-- (void)renameTShelfTab:(id)sender;
 
 - (void)runCommand:(id)sender;
 
