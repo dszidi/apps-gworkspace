@@ -171,11 +171,12 @@ static GWorkspace *gworkspace = nil;
   menuItem = [mainMenu addItemWithTitle:_(@"File") action:NULL keyEquivalent:@""];
   menu = AUTORELEASE ([NSMenu new]);
   [mainMenu setSubmenu: menu forItem: menuItem];		
+  [menu addItemWithTitle:_(@"New Window") action:@selector(showViewer:) keyEquivalent:@"n"];	
+  [menu addItemWithTitle:_(@"New Folder") action:@selector(newFolder:) keyEquivalent:@"N"];
+  [menu addItemWithTitle:_(@"New File")  action:@selector(newFile:) keyEquivalent:@""];
   [menu addItemWithTitle:_(@"Open") action:@selector(openSelection:) keyEquivalent:@"o"];
   [menu addItemWithTitle:_(@"Open With...")  action:@selector(openWith:) keyEquivalent:@""];
   [menu addItemWithTitle:_(@"Open as Folder") action:@selector(openSelectionAsFolder:) keyEquivalent:@"O"];
-  [menu addItemWithTitle:_(@"New Folder") action:@selector(newFolder:) keyEquivalent:@"n"];
-  [menu addItemWithTitle:_(@"New File")  action:@selector(newFile:) keyEquivalent:@"N"];
   [menu addItemWithTitle:_(@"Duplicate")  action:@selector(duplicateFiles:) keyEquivalent:@"u"];
   [menu addItemWithTitle:_(@"Destroy")  action:@selector(deleteFiles:) keyEquivalent:@"r"];  
   [menu addItemWithTitle:_(@"Move to Recycler")  action:@selector(recycleFiles:) keyEquivalent:@"d"];
@@ -250,7 +251,6 @@ static GWorkspace *gworkspace = nil;
   [subMenu addItemWithTitle:_(@"15") action:@selector(setLabelSize:) keyEquivalent:@""];
   [subMenu addItemWithTitle:_(@"16") action:@selector(setLabelSize:) keyEquivalent:@""];
 
-  [menu addItemWithTitle:_(@"Viewer") action:@selector(showViewer:) keyEquivalent:@"V"];	
             
   // Tools
   menuItem = [mainMenu addItemWithTitle:_(@"Tools") action:NULL keyEquivalent:@""];
