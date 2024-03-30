@@ -90,8 +90,6 @@ typedef enum BackImageStyle {
 
 - (void)makeIconsGrid;
 
-
-
 - (void)getDesktopInfo;
 
 - (void)updateDefaults;

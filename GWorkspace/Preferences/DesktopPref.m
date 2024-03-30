@@ -111,7 +111,7 @@ static NSString *nibName = @"DesktopPref";
 	  dockpos = [manager dockPosition];
 	  [dockPosMatrix selectCellAtRow: dockpos column: 0];
 	  dockstyle = [[manager dock] style];
-	  [dockStyleMatrix selectCellAtRow: dockstyle column: 0];
+	  [dockStyleMatrix selectCellAtRow: dockstyle column: 0]; 
 
 	  /* Internationalization */
 	  [[tabView tabViewItemAtIndex: 0] setLabel: NSLocalizedString(@"Background", @"")];
@@ -136,6 +136,8 @@ static NSString *nibName = @"DesktopPref";
 	  [cell setTitle: NSLocalizedString(@"Left", @"")];
 	  cell = [dockPosMatrix cellAtRow: 1 column: 0];
 	  [cell setTitle: NSLocalizedString(@"Right", @"")];
+	  cell = [dockPosMatrix cellAtRow: 2 column: 0];
+	  [cell setTitle: NSLocalizedString(@"Bottom", @"")];
 	  [dockStyleLabel setStringValue: NSLocalizedString(@"Style:", @"")];
 	  cell = [dockStyleMatrix cellAtRow: 0 column: 0];
 	  [cell setTitle: NSLocalizedString(@"Classic", @"")];
@@ -253,7 +255,14 @@ static NSString *nibName = @"DesktopPref";
   NSInteger row, col;
   
   [dockPosMatrix getRow: &row column: &col ofCell: cell];
-  [manager setDockPosition: (row == 0) ? DockPositionLeft : DockPositionRight];
+  // [manager setDockPosition: (row == 0) ? DockPositionLeft : DockPositionRight];
+  if (row == 0) {
+	[manager setDockPosition: DockPositionLeft];
+  } else if (row == 1) {
+	[manager setDockPosition: DockPositionRight];
+  } else if (row == 2) {
+	[manager setDockPosition: DockPositionBottom];
+  }
 }
 
 - (IBAction)setDockStyle:(id)sender
@@ -267,7 +276,7 @@ static NSString *nibName = @"DesktopPref";
 
 - (IBAction)setSingleClickLaunch:(id)sender
 {
-  [manager setSingleClickLaunch: ([sender state] == NSOnState)];
+  [manager setSingleClickLaunch: ([sender state] == NSOnState)]; 
 }
 
 @end

@@ -425,6 +425,7 @@
 - (void)setPosition:(DockPosition)pos
 {
   position = pos;
+
   [self tile];
 }
 
@@ -463,8 +464,16 @@
     [self tile];
   }
 }
-
 - (void)tile
+{
+  if ([manager dockPosition] == DockPositionBottom) {
+    [self tileHorizontal]; 
+  } else {
+    [self tileVertical];
+  }
+}
+
+- (void)tileVertical
 {
   NSView *view = [self superview];
   NSRect scrrect = [[NSScreen mainScreen] frame];
@@ -488,28 +497,6 @@
   
   maxheight -= (icnrect.size.height * 2);  
   
-
-  //if (position == DockPositionBottom) {
-    while (rect.size.height > maxheight) {
-      iconSize -= ICN_INCR;
-      icnrect.size.height = ceil(iconSize / 3 * 4);
-      icnrect.size.width = icnrect.size.height;
-      rect.size.height = [icons count] * icnrect.size.height;
-  
-      if (targetIndex != -1) {
-        rect.size.height += icnrect.size.height;
-      }
-        
-      if (iconSize <= MIN_ICN_SIZE) {
-        break;
-      }
-    }
-
-    // Bottom (not adjusted yet)
-    rect.size.height = icnrect.size.width;
-    rect.origin.y =  scrrect.size.height - rect.size.height;
-    rect.origin.x = ceil((scrrect.size.width - rect.size.width) / 2);
-  /*} else {
   while (rect.size.height > maxheight) {
     iconSize -= ICN_INCR;
     icnrect.size.height = ceil(iconSize / 3 * 4);
@@ -524,12 +511,11 @@
       break;
     }
   }
-    // Sides
-    rect.size.width = icnrect.size.width;
-    rect.origin.x = (position == DockPositionLeft) ? 0 : scrrect.size.width - rect.size.width;
-    rect.origin.y = ceil((scrrect.size.height - rect.size.height) / 2);
-  }*/
 
+  rect.size.width = icnrect.size.width;
+  rect.origin.x = (position == DockPositionLeft) ? 0 : scrrect.size.width - rect.size.width;
+  rect.origin.y = ceil((scrrect.size.height - rect.size.height) / 2); 
+  
   if (view) {
     [view setNeedsDisplayInRect: [self frame]];
   }
@@ -544,14 +530,85 @@
       [icon setIconSize: iconSize];
     }
     
+    // VERTICAL
     icnrect.origin.y -= icnrect.size.height;
     [icon setFrame: icnrect];
     
     if ((targetIndex != -1) && (targetIndex == i)) {
       icnrect.origin.y -= icnrect.size.height;
       targetRect = icnrect;
-    }
+    }    
   } 
+  
+  [self setNeedsDisplay: YES];
+  if (view) {
+    [view setNeedsDisplayInRect: [self frame]];
+  }
+}
+
+- (void)tileHorizontal
+{
+  NSView *view = [self superview];
+  NSRect scrrect = [[NSScreen mainScreen] frame];
+  int oldIcnSize = iconSize;
+  CGFloat maxwidth = scrrect.size.width;
+  NSRect icnrect = NSZeroRect;  
+  NSRect rect = NSZeroRect;
+  NSUInteger i;
+
+  iconSize = MAX_ICN_SIZE;
+  
+  icnrect.origin.x = 0;
+  icnrect.origin.y = 0;
+  icnrect.size.width = ceil(iconSize / 3 * 4);
+  icnrect.size.height = icnrect.size.width;
+   
+  rect.size.width = [icons count] * icnrect.size.width;
+  rect.size.height = icnrect.size.height;
+  if (targetIndex != -1) {
+    rect.size.width += icnrect.size.width;
+  }
+  
+  maxwidth -= (icnrect.size.width * 2);  
+  
+  while (rect.size.height > maxwidth) {
+    iconSize -= ICN_INCR;
+    icnrect.size.width = ceil(iconSize / 3 * 4);
+    icnrect.size.height = icnrect.size.width;
+    rect.size.height = [icons count] * icnrect.size.height;
+
+    if (targetIndex != -1) {
+      rect.size.width += icnrect.size.width;
+    }
+      
+    if (iconSize <= MIN_ICN_SIZE) {
+      break;
+    }
+  }
+ 
+  rect.origin.y = 0;
+  rect.origin.x = ceil((scrrect.size.width - rect.size.width) / 2);
+  
+  if (view) {
+    [view setNeedsDisplayInRect: [self frame]];
+  }
+  [self setFrame: rect];
+  icnrect.origin.y = 0;
+  
+  for (i = 0; i < [icons count]; i++ ) {
+    DockIcon *icon = [icons objectAtIndex: i];
+  
+    if (oldIcnSize != iconSize) {
+      [icon setIconSize: iconSize];
+    }
+    
+    icnrect.origin.x = (i * icnrect.size.width);
+    [icon setFrame: icnrect];
+   
+    if ((targetIndex != -1) && (targetIndex == i)) {
+      targetRect = icnrect;
+    }    
+  }
   
   [self setNeedsDisplay: YES];
   if (view) {

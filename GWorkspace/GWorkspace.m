@@ -978,8 +978,6 @@ static GWorkspace *gworkspace = nil;
   } else if (sel_isEqual(action, @selector(cut:))
                 || sel_isEqual(action, @selector(copy:))
                   || sel_isEqual(action, @selector(paste:))) {
-    NSWindow *kwin = [NSApp keyWindow];
-
   }
   
   return YES;
@@ -1427,8 +1425,7 @@ static GWorkspace *gworkspace = nil;
   [fsnodeRep setUseThumbnails: value];
   
   [vwrsManager thumbnailsDidChangeInPaths: nil];
-  [dtopManager thumbnailsDidChangeInPaths: nil];
-
+  [dtopManager thumbnailsDidChangeInPaths: nil];  
 }
 
 - (void)thumbnailsDidChange:(NSNotification *)notif
@@ -1461,7 +1458,6 @@ static GWorkspace *gworkspace = nil;
 
       [vwrsManager thumbnailsDidChangeInPaths: tmbdirs];
       [dtopManager thumbnailsDidChangeInPaths: tmbdirs];
-
       [tmbdirs removeAllObjects];
     }
 
@@ -2241,8 +2237,6 @@ static GWorkspace *gworkspace = nil;
   [fiend renameCurrentLayer];
 }
 
-
-
 - (void)cut:(id)sender
 {
   NSWindow *kwin = [NSApp keyWindow];
@@ -2322,7 +2316,7 @@ static GWorkspace *gworkspace = nil;
 {
   NSWindow *kwin = [NSApp keyWindow];
 
-  if (kwin) {      
+  if (kwin) {
     if ([vwrsManager hasViewerWithWindow: kwin]
                                   || [dtopManager hasWindow: kwin]) {
       NSPasteboard *pb = [NSPasteboard generalPasteboard];

@@ -113,6 +113,10 @@ typedef enum DockStyle
 
 - (void)tile;
 
+- (void)tileHorizontal;
+
+- (void)tileVertical;
+
 - (void)updateDefaults;
 
 - (void)checkRemovedApp:(id)sender;

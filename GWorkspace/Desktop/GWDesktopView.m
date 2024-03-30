@@ -389,8 +389,6 @@
 - (void)makeIconsGrid
 {
   NSRect dckr = [manager dockReservedFrame];
-  // Should we remove this tshfr here? Might be useful for dock on the bottom 
-  // NSRect tshfr = [manager tshelfReservedFrame];
   NSRect mmfr = [manager macmenuReservedFrame];
   NSRect gridrect = screenFrame;
   unsigned ymargin;
@@ -403,18 +401,14 @@
   
   [self calculateGridSize];
   
-  // Should we remove this tshfr here? Might be useful for dock on the bottom 
   // gridrect.origin.y += tshfr.size.height;
   // gridrect.size.height -= tshfr.size.height;
-
   gridrect.size.width -= dckr.size.width;
   
   gridrect.size.height -= mmfr.size.height;
   
-  if ([manager dockPosition] == DockPositionLeft) {
+  if ([manager dockPosition] != DockPositionRight) {
     gridrect.origin.x += dckr.size.width;
-  } else if ([manager dockPosition] == DockPositionBottom) {
-    gridrect.origin.y += dckr.size.height;
   }
   
   if (infoType != FSNInfoNameType) {
@@ -918,8 +912,7 @@ static void GWHighlightFrameRect(NSRect aRect)
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-  NSPoint p = [theEvent locationInWindow];
-  
+  NSPoint p = [theEvent locationInWindow]; 
   [super mouseMoved: theEvent];
 }
 

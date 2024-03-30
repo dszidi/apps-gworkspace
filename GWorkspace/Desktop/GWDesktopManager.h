@@ -53,7 +53,7 @@ typedef enum DockPosition {
   DockPosition dockPosition;
   
   NSRect dockReservedFrame;
-  NSRect macmenuReservedFrame;
+  NSRect macmenuReservedFrame; 
   
   GWorkspace *gworkspace;
   FSNodeRep *fsnodeRep;
