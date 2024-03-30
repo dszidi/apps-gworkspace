@@ -163,7 +163,7 @@ static GWorkspace *gworkspace = nil;
   menu = AUTORELEASE ([NSMenu new]);
   [mainMenu setSubmenu: menu forItem: menuItem];	
   [menu addItemWithTitle: _(@"Info Panel...") action:@selector(showInfo:) keyEquivalent:@""];
-  [menu addItemWithTitle: _(@"Preferences...") action:@selector(showPreferences:) keyEquivalent:@""];
+  [menu addItemWithTitle: _(@"Preferences...") action:@selector(showPreferences:) keyEquivalent:@","];
   [menu addItemWithTitle: _(@"Help...") action:@selector(showHelp:) keyEquivalent:@"?"];
   [menu addItemWithTitle: _(@"Activate context help") action:@selector(activateContextHelp:) keyEquivalent:@";"];
 	 
@@ -177,9 +177,9 @@ static GWorkspace *gworkspace = nil;
   [menu addItemWithTitle:_(@"Open") action:@selector(openSelection:) keyEquivalent:@"o"];
   [menu addItemWithTitle:_(@"Open With...")  action:@selector(openWith:) keyEquivalent:@""];
   [menu addItemWithTitle:_(@"Open as Folder") action:@selector(openSelectionAsFolder:) keyEquivalent:@"O"];
-  [menu addItemWithTitle:_(@"Duplicate")  action:@selector(duplicateFiles:) keyEquivalent:@"u"];
-  [menu addItemWithTitle:_(@"Destroy")  action:@selector(deleteFiles:) keyEquivalent:@"r"];  
-  [menu addItemWithTitle:_(@"Move to Recycler")  action:@selector(recycleFiles:) keyEquivalent:@"d"];
+  [menu addItemWithTitle:_(@"Duplicate")  action:@selector(duplicateFiles:) keyEquivalent:@"d"];
+  [menu addItemWithTitle:_(@"Destroy")  action:@selector(deleteFiles:) keyEquivalent:@""];  
+  [menu addItemWithTitle:_(@"Move to Recycler")  action:@selector(recycleFiles:) keyEquivalent:@"r"];
   [menu addItemWithTitle:_(@"Empty Recycler") action:@selector(emptyRecycler:) keyEquivalent:@""];
   
   // Edit
@@ -273,7 +273,7 @@ static GWorkspace *gworkspace = nil;
   [menu setSubmenu: subMenu forItem: menuItem];
 
   [menu addItemWithTitle:_(@"Terminal") action:@selector(showTerminal:) keyEquivalent:@"t"];
-  [menu addItemWithTitle:_(@"Run...") action:@selector(runCommand:) keyEquivalent:@""];  
+  [menu addItemWithTitle:_(@"Run...") action:@selector(runCommand:) keyEquivalent:@"0"];  
 
   menuItem = [menu addItemWithTitle:_(@"History") action:NULL keyEquivalent:@""];
   subMenu = AUTORELEASE ([NSMenu new]);
