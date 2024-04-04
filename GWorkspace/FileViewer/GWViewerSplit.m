@@ -35,8 +35,9 @@
 
 - (id)initWithFrame:(NSRect)frameRect
 {
-  self = [super initWithFrame: frameRect]; 
- 		
+  self = [super initWithFrame: frameRect];
+  _is_pane_splitter = YES;
+ 	
   diskInfoField = [NSTextFieldCell new];
   [diskInfoField setFont: [NSFont systemFontOfSize: 10]];
   [diskInfoField setBordered: NO];
@@ -53,7 +54,7 @@
 	if (info) {
   	[diskInfoField setStringValue: info]; 
 	} else {
-  	[diskInfoField setStringValue: @""]; 
+  	[diskInfoField setStringValue: @"TEST"]; 
   }
   
   if (NSEqualRects(diskInfoRect, NSZeroRect) == NO) {
@@ -63,16 +64,18 @@
 
 - (CGFloat)dividerThickness
 {
-  return 11;
+  return 8.0;
 }
-
+/*
 - (void)drawDividerInRect:(NSRect)aRect
 {
-  diskInfoRect = NSMakeRect(8, aRect.origin.y, 200, 10);    
+  diskInfoRect = NSMakeRect(aRect.origin.x, 8, 0, 10);    
+  diskInfoRect = NSMakeRect(aRect.origin.x, aRect.origin.y, aRect.size.height, 200.0);    
+  diskInfoRect = NSMakeRect(219, 50, 0, 10);    
   
   [super drawDividerInRect: aRect];   
   [diskInfoField setBackgroundColor: [self backgroundColor]];
   [diskInfoField drawWithFrame: diskInfoRect inView: self];
 }
-
+*/
 @end

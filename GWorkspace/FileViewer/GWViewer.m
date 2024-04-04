@@ -45,12 +45,12 @@
 #import "FSNFunctions.h"
 #import "Thumbnailer/GWThumbnailer.h"
 
-#define DEFAULT_INCR 150
+#define DEFAULT_INCR 0 // 150
 #define MIN_WIN_H 300
 
-#define MIN_SHELF_HEIGHT 2.0
+#define MIN_SHELF_HEIGHT 200.0 // was 2.0
 #define MID_SHELF_HEIGHT 77.0
-#define MAX_SHELF_HEIGHT 150.0
+#define MAX_SHELF_HEIGHT 450.0 // was 150.0
 #define COLLAPSE_LIMIT 35
 #define MID_LIMIT 110
 
@@ -183,9 +183,9 @@
     
     defEntry = [viewerPrefs objectForKey: @"shelfheight"];
     if (defEntry) {
-      shelfHeight = [defEntry floatValue];
+      // shelfHeight = [defEntry floatValue];
     } else {
-      shelfHeight = MID_SHELF_HEIGHT;
+      // shelfHeight = MID_SHELF_HEIGHT;
     }
        
     ASSIGN (vwrwin, win);
@@ -330,32 +330,44 @@
   int pathscrh = 98;
   NSUInteger resizeMask;
   BOOL hasScroller;
+  resizeMask = NSViewWidthSizable | NSViewHeightSizable;
   
   split = [[GWViewerSplit alloc] initWithFrame: r];
-  [split setAutoresizingMask: (NSViewWidthSizable | NSViewHeightSizable)];
-  [split setDelegate: self];
+  // [split setAutoresizingMask: (NSViewWidthSizable | NSViewHeightSizable)];
+  [split setAutoresizingMask: resizeMask];
+  [split setVertical: YES];
+  [split setAutoresizesSubviews: YES];
+  // [split setDraggedBarWidth: 12.0];
+  // [split setDividerColor: [NSColor redColor]];
+  [split setArrangesAllSubviews: YES];
+  [split setDelegate: self]; 
   
   d = [split dividerThickness];
   
-  r = NSMakeRect(0, 0, w, shelfHeight);  
-  shelf = [[GWViewerShelf alloc] initWithFrame: r forViewer: self];
+  NSRect shelfRect = NSMakeRect(8, 0, shelfHeight, h);
+  shelf = [[GWViewerShelf alloc] initWithFrame: shelfRect forViewer: self];  
+  [shelf setAutoresizingMask: resizeMask];
   [split addSubview: shelf];
+  // [split adjustSubviews];
   RELEASE (shelf);
   
-  r = NSMakeRect(0, shelfHeight + d, w, h - shelfHeight - d);
-  lowBox = [[NSView alloc] initWithFrame: r];
+  // NSRect lowBoxRect = NSMakeRect(0, shelfHeight + d, w, h - shelfHeight - d);
+  /*NSRect lowBoxRect = NSMakeRect(shelfHeight + 8, 0, w - shelfHeight - (xmargin * 4), h);
+  lowBox = [[NSView alloc] initWithFrame: lowBoxRect];
   resizeMask = NSViewWidthSizable | NSViewHeightSizable;
   [lowBox setAutoresizingMask: resizeMask];
   [lowBox setAutoresizesSubviews: YES];
   [split addSubview: lowBox];
-  RELEASE (lowBox);
+  RELEASE (lowBox);*/
 
-  r = [lowBox bounds];
-  w = r.size.width;
-  h = r.size.height; 
-  
-  r = NSMakeRect(xmargin, h - pathscrh, w - (xmargin * 2), pathscrh);
-  pathsScroll = [[GWViewerPathsScroll alloc] initWithFrame: r];
+  /*NSRect lb = [lowBox bounds];
+  w = lb.size.width;
+  h = lb.size.height;*/
+
+  // float toolbarHeight = 48.0;
+  /*  
+  NSRect pathScrollRect = NSMakeRect(xmargin, h - pathscrh, w - (xmargin * 2), pathscrh);
+  pathsScroll = [[GWViewerPathsScroll alloc] initWithFrame: pathScrollRect];
   [pathsScroll setBorderType: NSBezelBorder];
   [pathsScroll setHasHorizontalScroller: YES];
   [pathsScroll setHasVerticalScroller: NO];
@@ -364,9 +376,10 @@
   [pathsScroll setAutoresizingMask: resizeMask];
   [lowBox addSubview: pathsScroll];
   RELEASE (pathsScroll);
-
-  visibleCols = myrintf(r.size.width / [vwrwin resizeIncrements].width);  
+  */
+  // visibleCols = myrintf(r.size.width / [vwrwin resizeIncrements].width);  
   
+  /*
   r = [[pathsScroll contentView] bounds];
   pathsView = [[GWViewerIconsPath alloc] initWithFrame: r 
                    visibleIcons: visibleCols forViewer: self
@@ -375,16 +388,26 @@
   [pathsView setAutoresizingMask: resizeMask];
   [pathsScroll setDocumentView: pathsView];
   RELEASE (pathsView);
+  */
   
-  r = NSMakeRect(xmargin, 0, w - (xmargin * 2), h - pathscrh - ymargin);
+  // THESE ARE THE FILE VIEWS
+  // NSRect nviewScrollRect = NSMakeRect(xmargin, 0, w - (xmargin * 2), h - pathscrh - ymargin);
+  NSRect nviewScrollRect = NSMakeRect(shelfHeight + 8, 0, w - shelfHeight - 16, h);
   nviewScroll = [[GWViewerScrollView alloc] initWithFrame: r inViewer: self];
+  [nviewScroll setBorderType:NSNoBorder];
   [nviewScroll setBorderType: NSBezelBorder];
   hasScroller = ((viewType ==GWViewTypeIcon) || (viewType ==GWViewTypeList));
   [nviewScroll setHasHorizontalScroller: hasScroller];
   [nviewScroll setHasVerticalScroller: hasScroller];
-  resizeMask = NSViewNotSizable | NSViewWidthSizable | NSViewHeightSizable;
-  [nviewScroll setAutoresizingMask: resizeMask];
-  [lowBox addSubview: nviewScroll];
+  // resizeMask = NSViewNotSizable | NSViewWidthSizable | NSViewHeightSizable; 
+  resizeMask = NSViewWidthSizable | NSViewHeightSizable; 
+  [nviewScroll setAutoresizingMask: resizeMask]; 
+  
+  // [lowBox addSubview: nviewScroll]; 
+
+  // [split addSubview: lowBox];
+  [split addSubview: nviewScroll];
+  [split adjustSubviews];
   RELEASE (nviewScroll);
   
   [vwrwin setContentView: split];
@@ -482,9 +505,16 @@
   CGFloat w = r.size.width;
   CGFloat h = r.size.height;   
   CGFloat d = [split dividerThickness];
+
+  // NSUInteger iconCount = [[shelf listIcons] count];
+  // NSUInteger iconHeight = (NSUInteger)[shelf getIconSize];
     
-  [shelf setFrame: NSMakeRect(0, 0, w, shelfHeight)];
-  [lowBox setFrame: NSMakeRect(0, shelfHeight + d, w, h - shelfHeight - d)];
+  [shelf setFrame: NSMakeRect(0, 0, shelfHeight, h)];
+  // [shelf setFrame: NSMakeRect(0, 0, shelfHeight, (iconHeight * iconCount))];
+  // [lowBox setFrame: NSMakeRect(0, shelfHeight + d, w, h - shelfHeight - d)];
+  
+  [nviewScroll setFrame: NSMakeRect(shelfHeight + d, 0, w - shelfHeight - d, h)];
+  // [lowBox setFrame: NSMakeRect(shelfHeight + d, 0, w - shelfHeight - d, h)];
 }
 
 - (void)scrollToBeginning
@@ -916,10 +946,10 @@ constrainSplitPosition:(CGFloat)proposedPosition
 {
   if (proposedPosition < COLLAPSE_LIMIT) {
     shelfHeight = MIN_SHELF_HEIGHT;
-  } else if (proposedPosition <= MID_LIMIT) {  
-    shelfHeight = MID_SHELF_HEIGHT;
-  } else {
+  } else if (proposedPosition > MAX_SHELF_HEIGHT) {
     shelfHeight = MAX_SHELF_HEIGHT;
+  } else {
+    shelfHeight = proposedPosition;
   }
   
   return shelfHeight;

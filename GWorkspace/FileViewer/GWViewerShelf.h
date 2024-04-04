@@ -122,6 +122,10 @@
 
 - (void)checkIconsAfterHidingOfPaths:(NSArray *)hpaths;
 
+- (NSMutableArray *)listIcons;
+
+- (int)getIconSize;
+
 @end
 
 

@@ -36,11 +36,11 @@
 #import "FSNIcon.h"
 #import "FSNFunctions.h"
 
-#define DEF_ICN_SIZE 48
-#define DEF_TEXT_SIZE 12
-#define DEF_ICN_POS NSImageAbove
+#define DEF_ICN_SIZE 24 // 48
+#define DEF_TEXT_SIZE 14
+#define DEF_ICN_POS NSImageLeft //NSImageAbove
 
-#define DEF_GRID_WIDTH 90
+#define MIN_GRID_WIDTH 200 // 90
 #define Y_MARGIN (4)
 #define EDIT_MARGIN (4)
 
@@ -159,7 +159,13 @@
     }
 
     defentry = [defaults objectForKey: @"shelfcellswidth"];
-    gridSize.width = defentry ? [defentry intValue] : DEF_GRID_WIDTH; 
+    // gridSize.width = defentry ? [defentry intValue] : MIN_GRID_WIDTH;  
+    /*if (defentry)
+    {
+      gridSize.width = [defentry intValue];
+    } else {*/
+      gridSize.width = frameRect.size.width < MIN_GRID_WIDTH ? MIN_GRID_WIDTH : frameRect.size.width;   
+    // }
 
     icons = [NSMutableArray new];
 
@@ -172,7 +178,7 @@
     [self calculateGridSize];    
     [self makeIconsGrid];
  
-    [self registerForDraggedTypes: [NSArray arrayWithObject: NSFilenamesPboardType]];
+    [self registerForDraggedTypes: [NSArray arrayWithObject: NSFilenamesPboardType]]; 
 
     watchedPaths = [[NSCountedSet alloc] initWithCapacity: 1];
 
@@ -200,7 +206,7 @@
       NSDictionary *info = [iconsInfo objectAtIndex: i];
       NSArray *paths = [info objectForKey: @"paths"];
       NSInteger index = [[info objectForKey: @"index"] intValue];
-      NSMutableArray *icnnodes = [NSMutableArray array];
+      NSMutableArray *iconNodes = [NSMutableArray array];
       NSInteger j;
 
       for (j = 0; j < [paths count]; j++)
@@ -209,19 +215,19 @@
 
 	  if ([node isValid] && [baseNode isParentOfNode: node])
 	    {
-	      [icnnodes addObject: node];
+	      [iconNodes addObject: node];
 	    }
 	}
 
-      if ([icnnodes count] && (index != -1))
+      if ([iconNodes count] && (index != -1))
 	{
-	  if ([icnnodes count] == 1)
+	  if ([iconNodes count] == 1)
 	    {
-	      [self addIconForNode: [icnnodes objectAtIndex: 0] atIndex: index];
+	      [self addIconForNode: [iconNodes objectAtIndex: 0] atIndex: index];
 	    }
 	  else
 	    {
-	      [self addIconForSelection: icnnodes atIndex: index];
+	      [self addIconForSelection: iconNodes atIndex: index];
 	    }
 	}
     }
@@ -393,7 +399,8 @@
   NSSize labelSize = NSZeroSize;
   
   highlightSize.width = ceil(iconSize / 3 * 4);
-  highlightSize.height = ceil(highlightSize.width * [fsnodeRep highlightHeightFactor]);
+  highlightSize.height = ceil(highlightSize.width * [fsnodeRep highlightHeightFactor]); 
+  
   if ((highlightSize.height - iconSize) < 4) {
     highlightSize.height = iconSize + 4;
   }
@@ -405,7 +412,7 @@
 
 - (void)makeIconsGrid
 {
-  NSRect gridrect = [self bounds];
+  NSRect gridRect = [self bounds];
   NSPoint gpnt;
   NSInteger i;
 
@@ -413,33 +420,26 @@
     {
       NSZoneFree (NSDefaultMallocZone(), grid);
     }
+
   
-  colCount = (int)(gridrect.size.width / gridSize.width);  
-  rowCount = (int)(gridrect.size.height / gridSize.height);
+  colCount = 1;
+  rowCount = [icons count] + 1;
   gridCount = colCount * rowCount;
 
   grid = NSZoneMalloc (NSDefaultMallocZone(), sizeof(NSRect) * gridCount);	
 
   gpnt.x = 0;
-  gpnt.y = gridrect.size.height - gridSize.height - Y_MARGIN;
-
-  for (i = 0; i < gridCount; i++)
-    {
-      if (i > 0)
-	{
-	  gpnt.x += gridSize.width;      
-	}
-
-      if (gpnt.x >= (gridrect.size.width - gridSize.width))
-	{
-	  gpnt.x = 0;
-	  gpnt.y -= (gridSize.height + Y_MARGIN);
-	}
+  gpnt.y = gridRect.size.height - gridSize.height - Y_MARGIN;
  
-      grid[i].origin = gpnt;
-      grid[i].size = gridSize;
-      grid[i] = NSIntegralRect(grid[i]);    
-    }
+  for (NSInteger row = 0; row < rowCount; row++)
+  { 
+    // gpnt.y -+ row * gridSize.height + y_margin;
+    gpnt.y = gridRect.size.height - (row * gridSize.height) - Y_MARGIN;
+
+    grid[row].origin = gpnt;
+    grid[row].size = gridSize;
+    grid[row] = NSIntegralRect(grid[row]);    
+  }
 }
 
 - (NSInteger)firstFreeGridIndex
@@ -527,6 +527,8 @@
 
 - (NSRect)iconBoundsInGridAtIndex:(NSInteger)index
 {
+  // NSRect gridRect = [self bounds];
+  // NSRect icnBounds = NSMakeRect(grid[index].origin.x, grid[index].origin.y, iconSize, gridRect.size.width);
   NSRect icnBounds = NSMakeRect(grid[index].origin.x, grid[index].origin.y, iconSize, iconSize);
   NSRect hlightRect = NSZeroRect;
   
@@ -759,6 +761,16 @@
     {
       [dragIcon dissolveToPoint: dragPoint fraction: 0.3];
     }
+}
+
+- (NSMutableArray *)listIcons
+{
+  return [self icons];
+}
+
+- (int):getIconSize
+{
+  return iconSize;
 }
 
 @end
