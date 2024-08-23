@@ -39,6 +39,7 @@
 
 
 #define DEFAULT_ISIZE 24
+#define DEFAULT_COLUMN_WIDTH 256
 
 #ifndef max
 #define max(a,b) ((a) >= (b) ? (a):(b))
@@ -445,8 +446,14 @@
 
 - (FSNBrowserColumn *)createEmptyColumn
 {
-  CREATE_AUTORELEASE_POOL(arp);
   int count = [columns count];
+  // Avoid creating multiple empty columns on resize
+  /*if(count > [[self selectedPaths] count] + 2)
+  {
+    return nil;
+  }*/
+
+  CREATE_AUTORELEASE_POOL(arp);
   FSNBrowserColumn *bc = [[FSNBrowserColumn alloc] initInBrowser: self
                                        atIndex: count
                                  cellPrototype: cellPrototype
@@ -492,15 +499,16 @@
 - (void)addFillingColumn 
 {
   NSInteger i;
+  i = lastColumnLoaded + 1;
 			
-  if (lastColumnLoaded + 1 >= [columns count])
+  /*if (lastColumnLoaded + 1 >= [columns count])
     {
       i = [columns indexOfObject: [self createEmptyColumn]];
     }
   else
     {
       i = lastColumnLoaded + 1;
-    }
+    }*/
         
   updateViewsLock++;
   [self setLastColumn: i];
@@ -706,7 +714,10 @@
     NSInteger i;
 
     columnSize.height = r.size.height;
-    columnSize.width = myrintf(frameWidth / visibleColumns);
+    // columnSize.width = myrintf(frameWidth / visibleColumns);
+
+    // columnSize.height = [_super_view bounds].size.height;
+    columnSize.width = DEFAULT_COLUMN_WIDTH;
     
     [window disableFlushWindow];
     
@@ -715,7 +726,7 @@
 	NSInteger n = i - firstVisibleColumn;
     
 	colrect = NSZeroRect;
-	colrect.size = columnSize;
+	colrect.size = columnSize; 
 	colrect.origin.y = 0;
 
 	if (i < firstVisibleColumn)
@@ -1440,16 +1451,17 @@
 
 - (void)resizeWithOldSuperviewSize:(NSSize)oldBoundsSize
 {
-  NSRect r = [[self superview] bounds];
-  NSInteger ncols = myrintf(r.size.width / columnSize.width);
+  NSRect r = [[self superview] bounds];  
+ 
+  // NSInteger ncols = myrintf(r.size.width / columnSize.width);
 
   [self setFrame: r];
   
-  if (ncols != visibleColumns) {
+  /*if (ncols != visibleColumns) {
     updateViewsLock++;
     [self setVisibleColumns: ncols];
     updateViewsLock--;
-  }
+  }*/
     
   [self tile];
 }

@@ -330,7 +330,9 @@
   int pathscrh = 98;
   NSUInteger resizeMask;
   BOOL hasScroller;
+  // resizeMask = NSViewHeightSizable;
   resizeMask = NSViewWidthSizable | NSViewHeightSizable;
+  // resizeMask = NSViewNotSizable | NSViewWidthSizable | NSViewMinYMargin;
   
   split = [[GWViewerSplit alloc] initWithFrame: r];
   // [split setAutoresizingMask: (NSViewWidthSizable | NSViewHeightSizable)];
@@ -339,7 +341,7 @@
   [split setAutoresizesSubviews: YES];
   // [split setDraggedBarWidth: 12.0];
   // [split setDividerColor: [NSColor redColor]];
-  [split setArrangesAllSubviews: YES];
+  // [split setArrangesAllSubviews: YES];
   [split setDelegate: self]; 
   
   d = [split dividerThickness];
@@ -1317,6 +1319,13 @@ constrainMinCoordinate:(CGFloat)proposedMin
           viewType = GWViewTypeList;
         }
     
+      /*if (tag == GWViewTypeBrowser)
+      {
+        [nodeView setAutoresizeMask: NSViewHeightSizable];
+      } else {
+        [nodeView setAutoresizeMask: NSViewWidthSizable | NSViewHeightSizable];
+      }*/
+
       [nviewScroll setDocumentView: nodeView];	
       RELEASE (nodeView); 
       [nodeView showContentsOfNode: baseNode]; 
